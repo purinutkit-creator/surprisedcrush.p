@@ -1,0 +1,29 @@
+# One-click deploy on Render: web service + managed PostgreSQL.
+services:
+  - type: web
+    name: first-gift
+    runtime: node
+    plan: starter
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: first-gift-db, property: connectionString }
+      - key: DATABASE_SSL
+        value: "false"
+      # Optional S3-compatible storage (Cloudflare R2, Supabase Storage S3, AWS S3).
+      # Without it, uploads are stored durably inside PostgreSQL.
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+databases:
+  - name: first-gift-db
+    plan: basic-256mb
