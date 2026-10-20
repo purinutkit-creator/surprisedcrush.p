@@ -171,6 +171,16 @@ function Detail({ id, presence, now, watching, setWatching }: { id: string; pres
             {d.data.attempts.map((a: any, i: number) => <Badge key={i} color={a.correct ? 'green' : 'red'}>{a.guess}</Badge>)}
           </div>
         )}
+        {s.geo && (
+          <p className="text-sm">
+            📍 ตำแหน่งที่แชร์: <b>{s.geo.lat.toFixed(5)}, {s.geo.lng.toFixed(5)}</b>
+            {s.geo.accuracy != null && <span className="text-zinc-500"> (±{Math.round(s.geo.accuracy)} ม.)</span>}
+            {' '}
+            <a className="text-pink-600 underline" target="_blank" rel="noreferrer"
+              href={`https://www.openstreetmap.org/?mlat=${s.geo.lat}&mlon=${s.geo.lng}#map=16/${s.geo.lat}/${s.geo.lng}`}>เปิดแผนที่</a>
+            <span className="ml-1 text-zinc-400">· {fmtDateTime(s.geo.at)}</span>
+          </p>
+        )}
       </Section>
 
       <Section title="ควบคุมจากแอดมิน" desc="เปลี่ยนแปลงแล้วหน้าของผู้รับอัปเดตแบบ Real-Time">

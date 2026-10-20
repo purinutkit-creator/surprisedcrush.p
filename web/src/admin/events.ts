@@ -26,6 +26,7 @@ export function eventLabel(e: VisitorEvent): string {
     case 'exchange_rejected': return `ปฏิเสธภารกิจ: ${d.mission ?? ''}`;
     case 'solved': return d.via === 'guess' ? 'ทายถูก 🎉' : d.via === 'mission' ? 'ปลดล็อกเฉลยจากภารกิจ 🎉' : 'แอดมินเปิดเฉลยให้ 🎉';
     case 'selfie_sent': return `ส่งรูปเซลฟี่ ${d.kind === 'together' ? 'คู่กับตัวแทนของเรา 💞' : 'กับของขวัญ 🎁'}`;
+    case 'location_shared': return `แชร์ตำแหน่งที่อยู่ 📍${d.accuracy != null ? ` (±${d.accuracy} ม.)` : ''}`;
     case 'message_typing': return 'เริ่มเขียนข้อความ ✍️';
     case 'message_sent': return `ส่งข้อความสำเร็จ 💌 (${d.chars ?? '?'} ตัวอักษร)`;
     case 'gallery_opened': return 'เปิดแกลเลอรี 📸';
