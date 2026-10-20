@@ -8,6 +8,8 @@ type Handler = (msg: any) => void;
  * Nothing outside this web page (screen, camera, microphone, other apps) is ever accessed.
  */
 export class LiveClient {
+  /** When false, the live replay shows typed input values; set from website settings. */
+  maskInputs = false;
   private ws: WebSocket | null = null;
   private retry = 0;
   private closed = false;
@@ -90,7 +92,7 @@ export class LiveClient {
         if (!this.flushTimer) this.flushTimer = window.setTimeout(() => this.flush(), 120);
       },
       // Privacy first: every input value is masked, and anything marked rr-mask / rr-block is hidden.
-      maskAllInputs: true,
+      maskAllInputs: this.maskInputs,
       maskTextClass: 'rr-mask',
       blockClass: 'rr-block',
       recordCanvas: false,

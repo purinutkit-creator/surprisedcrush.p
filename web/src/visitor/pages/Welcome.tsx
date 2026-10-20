@@ -98,7 +98,7 @@ export default function WelcomePage() {
     }
   };
 
-  const box = 'gift-input rr-mask text-center text-2xl font-number tracking-widest !px-2';
+  const box = 'gift-input text-center text-2xl font-number tracking-widest !px-2';
   return (
     <Page className="justify-center">
       <PopIn className="mb-6"><GiftBox /></PopIn>

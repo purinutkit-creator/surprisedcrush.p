@@ -123,11 +123,11 @@ export default function Website() {
           <Text label="ข้อความเมื่อไม่มีลิงก์" value={w.progress.blockedMessage} onChange={(v) => set({ progress: { ...w.progress, blockedMessage: v } })} />
         </Row>
       </Section>
-      <Section title="การแจ้งเตือนความเป็นส่วนตัว & Live View" desc="ผู้รับจะเห็นการแจ้งเตือนนี้ และ Live Screen View จะทำงานเฉพาะเมื่อผู้รับกดอนุญาตเท่านั้น">
-        <Toggle label="แสดงการแจ้งเตือนการติดตามกิจกรรม" checked={w.tracking.noticeEnabled} onChange={(v) => set({ tracking: { ...w.tracking, noticeEnabled: v } })} />
-        <Area label="ข้อความแจ้งเตือน" rows={3} value={w.tracking.noticeText} onChange={(v) => set({ tracking: { ...w.tracking, noticeText: v } })} />
-        <Toggle label="เปิดให้ขอ Live Screen View" checked={w.tracking.liveViewEnabled} onChange={(v) => set({ tracking: { ...w.tracking, liveViewEnabled: v } })} />
-        <Area label="ข้อความขอความยินยอม" rows={3} value={w.tracking.consentText} onChange={(v) => set({ tracking: { ...w.tracking, consentText: v } })} />
+      <Section title="การแจ้งเตือน & Live Screen View" desc="หน้าแอดมินเห็นความคืบหน้า กิจกรรม และข้อความทั้งหมดอยู่แล้ว ส่วนนี้คุมหน้าตาฝั่งผู้รับและภาพ Live">
+        <Toggle label="เปิด Live Screen View (ดูหน้าเว็บที่ผู้รับกำลังเปิดแบบสด)" hint="ดูได้ทันทีเมื่อผู้รับออนไลน์ ไม่ต้องให้ผู้รับกดอนุญาตก่อน" checked={w.tracking.liveViewEnabled} onChange={(v) => set({ tracking: { ...w.tracking, liveViewEnabled: v } })} />
+        <Toggle label="ปิดบังช่องกรอกในภาพ Live View" hint="ปิดไว้ (ค่าเริ่มต้น) = เห็นทุกอย่างที่ผู้รับพิมพ์ในภาพสด เช่น วันเกิดและข้อความ" checked={w.tracking.maskInputs} onChange={(v) => set({ tracking: { ...w.tracking, maskInputs: v } })} />
+        <Toggle label="แสดงหมายเหตุให้ผู้รับทราบว่าเว็บนี้แสดงกิจกรรมให้คนทำของขวัญ" hint="แนะนำให้เปิดไว้เพื่อความโปร่งใส — แสดงครั้งเดียวตอนเปิดเว็บ" checked={w.tracking.noticeEnabled} onChange={(v) => set({ tracking: { ...w.tracking, noticeEnabled: v } })} />
+        <Area label="ข้อความหมายเหตุ" rows={3} value={w.tracking.noticeText} onChange={(v) => set({ tracking: { ...w.tracking, noticeText: v } })} />
       </Section>
       <Invites />
       <DataTools />

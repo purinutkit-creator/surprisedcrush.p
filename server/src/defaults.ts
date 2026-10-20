@@ -81,9 +81,12 @@ export const DEFAULT_SECTIONS: Record<SectionName, Record<string, any>> = {
     },
     tracking: {
       noticeEnabled: true,
-      noticeText: 'เว็บนี้บันทึกกิจกรรมภายในเว็บไซต์ (เช่น หน้าที่เปิดและความคืบหน้า) เพื่อให้คนทำของขวัญรู้ว่าเธอเปิดแล้วนะ 💗 ไม่มีการเข้าถึงกล้อง ไมโครโฟน หรือแอปอื่น ๆ',
+      noticeText: 'เว็บนี้แสดงกิจกรรมภายในเว็บไซต์ (เช่น หน้าที่เปิด ความคืบหน้า และหน้าเว็บที่เธอกำลังดู) ให้คนทำของขวัญเห็นแบบสด ๆ เพื่อลุ้นไปกับเธอด้วยนะ 💗 เห็นเฉพาะหน้าเว็บนี้ ไม่มีการเข้าถึงกล้อง ไมโครโฟน หรือแอปอื่น ๆ',
       liveViewEnabled: true,
-      consentText: 'ให้คนทำของขวัญดูหน้าเว็บที่เธอกำลังเปิดแบบสด ๆ ได้มั้ย? (เห็นเฉพาะหน้าเว็บนี้ ช่องกรอกข้อมูลจะถูกปิดบัง และหยุดแชร์ได้ตลอดเวลา)',
+      // Admin can watch the live replay without a per-session opt-in. Inputs on this site are
+      // things the giver already owns or receives (birthday they set, guesses, the message to them).
+      maskInputs: false,
+      consentText: 'ให้คนทำของขวัญดูหน้าเว็บที่เธอกำลังเปิดแบบสด ๆ ได้มั้ย?',
     },
   },
   recipient: {

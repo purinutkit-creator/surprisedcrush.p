@@ -148,9 +148,9 @@ function Detail({ id, presence, now, watching, setWatching }: { id: string; pres
         <span className="font-semibold">{s.device}</span>
         <Badge>{STATUS_TH[st]}</Badge>
         {s.preview && <Badge color="violet">Preview</Badge>}
-        {s.liveConsent ? <Badge color="green">อนุญาต Live View</Badge> : <Badge>ไม่อนุญาต Live View</Badge>}
-        {!watching && <Btn kind="primary" className="ml-auto" disabled={!s.liveConsent || !presence?.online} onClick={() => setWatching(true)}
-          title={!s.liveConsent ? 'ต้องได้รับความยินยอมจากผู้รับก่อน' : !presence?.online ? 'ผู้รับออฟไลน์' : ''}>👁️ Watch Live</Btn>}
+        <Badge color="green">Live View พร้อม</Badge>
+        {!watching && <Btn kind="primary" className="ml-auto" disabled={!presence?.online} onClick={() => setWatching(true)}
+          title={!presence?.online ? 'ผู้รับออฟไลน์อยู่' : ''}>👁️ Watch Live</Btn>}
       </div>
 
       {watching && <LiveView sessionId={id} presence={presence} onStop={() => setWatching(false)} />}

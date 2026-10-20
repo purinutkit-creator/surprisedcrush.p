@@ -71,10 +71,10 @@ function Mission({ m, pendingText, rejectedText }: { m: any; pendingText: string
         {!blocked && (
           <form onSubmit={submit} className="mt-4">
             {long ? (
-              <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={3000} className="gift-input rr-mask resize-none"
+              <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={3000} className="gift-input resize-none"
                 placeholder={m.kind === 'message' ? 'พิมพ์ข้อความถึงคนส่งของขวัญ…' : 'พิมพ์คำขอของเธอ…'} />
             ) : (
-              <input value={text} onChange={(e) => setText(e.target.value)} maxLength={300} className="gift-input rr-mask"
+              <input value={text} onChange={(e) => setText(e.target.value)} maxLength={300} className="gift-input"
                 placeholder={m.kind === 'phrase' ? 'พิมพ์ข้อความตามด้านบน…' : 'คำตอบของเธอ…'} />
             )}
             {m.kind === 'message' && m.minLength > 0 && <p className="mt-1 text-right text-sm text-ink/60">{count} / {m.minLength} ตัวอักษร</p>}

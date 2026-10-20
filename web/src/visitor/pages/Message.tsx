@@ -57,7 +57,7 @@ export default function MessagePage() {
                   maxLength={Number(m.maxChars) || 5000}
                   rows={8}
                   placeholder={m.placeholder}
-                  className="gift-input rr-mask min-h-[220px] resize-y font-letter text-lg leading-relaxed"
+                  className="gift-input min-h-[220px] resize-y font-letter text-lg leading-relaxed"
                   aria-label="ข้อความถึงผู้ส่ง"
                 />
                 <div className="mt-3">

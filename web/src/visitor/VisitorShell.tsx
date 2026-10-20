@@ -76,6 +76,9 @@ export default function VisitorShell() {
 
   useEffect(() => () => music.destroy(), [music]);
 
+  // Whether the admin's live replay masks what the recipient types (off by default now).
+  useEffect(() => { live.maskInputs = !!state?.tracking?.maskInputs; }, [state?.tracking?.maskInputs, live]);
+
   const setPage = useCallback((p: string) => {
     setPageState(p);
     live.setPage(p);

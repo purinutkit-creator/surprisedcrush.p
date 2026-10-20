@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS visitor_sessions (
   message_sent boolean NOT NULL DEFAULT false,
   gallery_opened boolean NOT NULL DEFAULT false,
   confession_opened boolean NOT NULL DEFAULT false,
-  live_consent boolean NOT NULL DEFAULT false,
+  live_consent boolean NOT NULL DEFAULT true,
   tracking_ack boolean NOT NULL DEFAULT false
 );
 CREATE TABLE IF NOT EXISTS visitor_tokens (
