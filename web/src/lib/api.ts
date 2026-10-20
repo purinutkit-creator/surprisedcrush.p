@@ -59,6 +59,13 @@ function visitorHeaders() {
 export const visitorApi = {
   get: <T = any>(url: string) => request<T>('GET', url, undefined, visitorHeaders()),
   post: <T = any>(url: string, body: unknown = {}) => request<T>('POST', url, body, visitorHeaders()),
+  /** Upload an optional selfie keepsake the visitor chose to send. */
+  uploadSelfie(file: Blob, kind: string) {
+    const fd = new FormData();
+    fd.append('photo', file, 'selfie.jpg');
+    fd.append('kind', kind);
+    return request<{ ok: boolean; state: any }>('POST', '/api/selfie', fd, visitorHeaders());
+  },
   /** Fire-and-forget activity event. Never contains anything the visitor typed. */
   track(type: string, data: Record<string, string | number | boolean> = {}) {
     request('POST', '/api/track', { type, data }, visitorHeaders()).catch(() => {});

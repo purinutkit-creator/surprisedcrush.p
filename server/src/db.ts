@@ -45,6 +45,7 @@ export const SINGLETON_TABLES = [
   'music_settings',
   'theme_settings',
   'fyi_settings',
+  'selfie_settings',
 ] as const;
 
 /** Ordered lists the admin edits. Rows keep the same id across stages so references survive publishing. */
@@ -200,6 +201,16 @@ CREATE TABLE IF NOT EXISTS recipient_messages (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS selfie_submissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id uuid REFERENCES visitor_sessions(id) ON DELETE SET NULL,
+  media_id uuid NOT NULL REFERENCES media_files(id) ON DELETE CASCADE,
+  kind text NOT NULL,
+  is_test boolean NOT NULL DEFAULT false,
+  is_read boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS activity_logs (
   id bigserial PRIMARY KEY,
   actor text NOT NULL,
@@ -216,6 +227,11 @@ CREATE INDEX IF NOT EXISTS activity_logs_actor ON activity_logs (actor, id DESC)
 
 export async function migrate() {
   await pool.query(schema);
+  // Idempotent column migrations for databases created by an earlier version.
+  await pool.query(`
+    ALTER TABLE visitor_sessions ALTER COLUMN live_consent SET DEFAULT true;
+    ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS selfie_done boolean NOT NULL DEFAULT false;
+  `);
   for (const t of SINGLETON_TABLES) {
     await pool.query(`CREATE TABLE IF NOT EXISTS ${t} (
       stage text PRIMARY KEY CHECK (stage IN ('draft','published')),

@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { loadContent } from '../content.js';
-import { query } from '../db.js';
+import { one, query } from '../db.js';
 import { hub } from '../realtime.js';
+import { deleteMedia, saveMedia } from '../storage.js';
 import { ah, HttpError, rateLimit } from '../util.js';
 import {
   BlockedError, buildState, checkBirthday, getConfession, guess, logVisitor, markProgress, requireVisitor,
@@ -115,6 +117,26 @@ publicRouter.post('/consent', ah(async (req, res) => {
     }
     hub.consentChanged(ctx.session.id, value);
   }
+  res.json({ ok: true, state: await fresh(req, res) });
+}));
+
+const selfieUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024, files: 1 } });
+
+publicRouter.post('/selfie', rateLimit('selfie', 12, 60_000), selfieUpload.single('photo'), ah(async (req, res) => {
+  await ensureOpen(req);
+  const ctx = await requireVisitor(req, res);
+  if (!ctx.content.sections.selfie.enabled) throw new HttpError(403, 'ตอนนี้ยังไม่เปิดให้ถ่ายรูปน้า');
+  const file = req.file;
+  if (!file) throw new HttpError(400, 'ยังไม่มีรูปเลยน้า');
+  const kind = ['gift', 'together'].includes(req.body?.kind) ? req.body.kind : 'gift';
+  const media = await saveMedia(file.buffer, `selfie-${kind}.jpg`);
+  if (media.kind !== 'image') { await deleteMedia(media.id); throw new HttpError(400, 'ต้องเป็นรูปภาพเท่านั้นน้า'); }
+  const row = await one<{ id: string }>(
+    `INSERT INTO selfie_submissions (session_id, media_id, kind, is_test) VALUES ($1,$2,$3,$4) RETURNING id`,
+    [ctx.session.id, media.id, kind, ctx.preview]);
+  await query(`UPDATE visitor_sessions SET selfie_done = true WHERE id = $1`, [ctx.session.id]);
+  await logVisitor({ id: ctx.session.id, preview: ctx.preview }, 'selfie_sent', { kind });
+  hub.toAdmins({ t: 'selfie_new', preview: ctx.preview });
   res.json({ ok: true, state: await fresh(req, res) });
 }));
 

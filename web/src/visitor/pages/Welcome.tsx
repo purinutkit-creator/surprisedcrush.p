@@ -4,6 +4,7 @@ import { ApiError, visitorApi } from '../../lib/api';
 import { celebrate } from '../../lib/confetti';
 import { sfx } from '../../lib/sfx';
 import { useVisitor } from '../context';
+import { SelfieGate } from '../components/SelfieGate';
 import { Card, GiftButton, Page, PopIn } from '../ui';
 
 export function GiftBox({ size = 120 }: { size?: number }) {
@@ -22,6 +23,8 @@ export function GiftBox({ size = 120 }: { size?: number }) {
 export default function WelcomePage() {
   const { state, apply } = useVisitor();
   const r = state.recipient;
+  // Optional selfie keepsake comes first, but can always be skipped.
+  const [selfieOpen, setSelfieOpen] = useState(!!state.selfie?.enabled && !state.progress.selfieDone);
   const [d, setD] = useState({ day: '', month: '', year: '' });
   const [err, setErr] = useState<string | null>(null);
   const [shake, setShake] = useState(0);
@@ -97,6 +100,8 @@ export default function WelcomePage() {
       setBusy(false);
     }
   };
+
+  if (selfieOpen) return <SelfieGate onDone={() => setSelfieOpen(false)} />;
 
   const box = 'gift-input text-center text-2xl font-number tracking-widest !px-2';
   return (

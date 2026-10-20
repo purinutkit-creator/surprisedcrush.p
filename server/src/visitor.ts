@@ -15,6 +15,7 @@ export interface VisitorRow {
   birthday_passed: boolean; birthday_fails: number; birthday_locked_until: Date | null;
   letter_opened: boolean; letter_read: boolean; celebrated: boolean; message_sent: boolean;
   gallery_opened: boolean; confession_opened: boolean; live_consent: boolean; tracking_ack: boolean;
+  selfie_done: boolean;
 }
 export interface GameRow {
   session_id: string; started_at: Date | null; attempts_used: number; extra_chances: number; hint_bonus: number;
@@ -247,8 +248,19 @@ export async function buildState(ctx: VisitorCtx) {
       gameStarted: !!ctx.game.started_at, attemptsUsed: ctx.game.attempts_used, attemptsLeft: nums.left, attemptsTotal: nums.total,
       solved: ctx.game.solved, solvedVia: ctx.game.solved_via, messageSent: s.message_sent,
       galleryOpened: s.gallery_opened, confessionOpened: s.confession_opened, confessionAvailable: canConfession(ctx),
+      selfieDone: s.selfie_done,
     },
   };
+
+  if (c.sections.selfie.enabled) {
+    const sf = c.sections.selfie;
+    state.selfie = {
+      enabled: true, title: fill(sf.title, v), subtitle: fill(sf.subtitle, v),
+      giftLabel: sf.giftLabel, togetherLabel: sf.togetherLabel,
+      representationImageUrl: mediaUrl(sf.representationImageId), representationCaption: sf.representationCaption,
+      sendLabel: sf.sendLabel, skipLabel: sf.skipLabel, thanksText: sf.thanksText,
+    };
+  }
 
   if (!s.birthday_passed) return state;
 
@@ -380,6 +392,10 @@ export async function markProgress(ctx: VisitorCtx, event: string) {
     case 'game_started':
       if (!s.birthday_passed || !pages.game || (pages.letter && !s.letter_read)) throw new HttpError(403, 'locked');
       if (!ctx.game.started_at) { await query(`UPDATE guessing_sessions SET started_at = now() WHERE session_id = $1`, [id]); await logVisitor(sv(ctx), 'game_start'); }
+      return;
+    case 'selfie_done':
+      // Optional keepsake; the visitor may skip at any time.
+      if (!s.selfie_done) await query(`UPDATE visitor_sessions SET selfie_done = true WHERE id = $1`, [id]);
       return;
     case 'celebrated':
       if (!ctx.game.solved) throw new HttpError(403, 'locked');

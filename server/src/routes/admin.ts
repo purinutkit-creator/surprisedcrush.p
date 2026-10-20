@@ -147,6 +147,8 @@ adminRouter.get('/stats', ah(async (_req, res) => {
       (SELECT count(*) FROM exchange_requests r JOIN visitor_sessions v ON v.id = r.session_id WHERE NOT v.is_preview AND r.status = 'pending')::int AS pending_requests,
       (SELECT count(*) FROM recipient_messages WHERE NOT is_test)::int AS messages,
       (SELECT count(*) FROM recipient_messages WHERE NOT is_test AND NOT is_read)::int AS unread,
+      (SELECT count(*) FROM selfie_submissions WHERE NOT is_test)::int AS selfies,
+      (SELECT count(*) FROM selfie_submissions WHERE NOT is_test AND NOT is_read)::int AS unread_selfies,
       (SELECT count(*) FROM visitor_sessions WHERE NOT is_preview AND gallery_opened)::int AS gallery,
       (SELECT count(*) FROM visitor_sessions WHERE NOT is_preview AND confession_opened)::int AS confession,
       (SELECT max(last_seen_at) FROM visitor_sessions WHERE NOT is_preview) AS last_visit
@@ -398,6 +400,26 @@ adminRouter.get('/messages.csv', ah(async (req, res) => {
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="messages-${new Date().toISOString().slice(0, 10)}.csv"`);
   res.send('﻿' + lines.join('\r\n'));
+}));
+
+/* -------------------------------------------------------------- selfies */
+
+adminRouter.get('/selfies', ah(async (req, res) => {
+  const test = req.query.test === '1';
+  const rows = await query(`
+    SELECT s.id, s.kind, s.media_id, s.is_read, s.is_test, s.created_at, v.device
+    FROM selfie_submissions s LEFT JOIN visitor_sessions v ON v.id = s.session_id
+    WHERE s.is_test = $1 ORDER BY s.created_at DESC LIMIT 300`, [test]);
+  // Mark the shown ones as read.
+  await query(`UPDATE selfie_submissions SET is_read = true WHERE is_test = $1 AND NOT is_read`, [test]);
+  res.json(rows.map((r: any) => ({ ...r, url: `/media/${r.media_id}` })));
+}));
+
+adminRouter.delete('/selfies/:id', ah(async (req, res) => {
+  const row = await one<{ media_id: string }>(`DELETE FROM selfie_submissions WHERE id = $1 RETURNING media_id`, [req.params.id]);
+  if (row) await deleteMedia(row.media_id).catch(() => {});
+  await logAdmin(req, 'delete_selfie', { id: req.params.id });
+  res.json({ ok: true });
 }));
 
 /* -------------------------------------------------------------- invites */

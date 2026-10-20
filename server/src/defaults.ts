@@ -12,6 +12,7 @@ export const SECTIONS = {
   music: 'music_settings',
   theme: 'theme_settings',
   fyi: 'fyi_settings',
+  selfie: 'selfie_settings',
 } as const satisfies Record<string, SingletonTable>;
 
 export const LISTS = {
@@ -234,6 +235,19 @@ export const DEFAULT_SECTIONS: Record<SectionName, Record<string, any>> = {
     background: { type: 'gradient', imageId: null },
     animations: { floatingHearts: true, stars: true, sparkles: true, particles: true, intensity: 'normal' },
     transition: 'fadeSlide',
+  },
+  selfie: {
+    // Optional keepsake. Always skippable — never blocks the gift. Off until the admin turns it on.
+    enabled: false,
+    title: 'ถ่ายรูปเก็บโมเมนต์หน่อยมั้ย? 📸',
+    subtitle: 'ก่อนเปิดของขวัญ ถ้าอยากถ่ายรูปเก็บไว้เป็นที่ระลึกก็ถ่ายได้นะ ไม่ถ่ายก็ไม่เป็นไรเลยน้า 💗',
+    giftLabel: 'เซลฟี่คู่กับของขวัญ 🎁',
+    togetherLabel: 'เซลฟี่คู่กับตัวแทนของเรา 💞',
+    representationImageId: null,
+    representationCaption: 'นี่คือตัวแทนของเรานะ เอาไว้ถ่ายคู่กันน้า 🤭',
+    sendLabel: 'ส่งให้คนทำของขวัญ 💌',
+    skipLabel: 'ขอข้ามไปก่อน',
+    thanksText: 'ขอบคุณน้าา เก็บไว้ในใจแล้ว 💗',
   },
   fyi: {
     enabled: true,

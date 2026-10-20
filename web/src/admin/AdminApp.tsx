@@ -14,6 +14,7 @@ const Game = lazy(() => import('./sections/Game'));
 const Exchange = lazy(() => import('./sections/Exchange'));
 const Messages = lazy(() => import('./sections/Messages'));
 const Gallery = lazy(() => import('./sections/Gallery'));
+const Selfie = lazy(() => import('./sections/Selfie'));
 const Confession = lazy(() => import('./sections/Confession'));
 const Music = lazy(() => import('./sections/Music'));
 const Appearance = lazy(() => import('./sections/Appearance'));
@@ -34,6 +35,7 @@ const NAV: { to: string; label: string; icon: string }[] = [
   { to: 'exchange', label: 'Exchange & Missions', icon: '🎟️' },
   { to: 'messages', label: 'Messages Inbox', icon: '💬' },
   { to: 'gallery', label: 'Photo Gallery', icon: '📸' },
+  { to: 'selfie', label: 'Selfie & ของที่ระลึก', icon: '🤳' },
   { to: 'confession', label: 'Confession Page', icon: '💖' },
   { to: 'fyi', label: 'FYI & Love Timer', icon: '💡' },
   { to: 'music', label: 'Music Manager', icon: '🎵' },
@@ -151,6 +153,10 @@ function Shell({ me, setMe, onLogout }: { me: any; setMe: (m: any) => void; onLo
         }
       }
       if (m.t === 'requests_changed') refreshCounts();
+      if (m.t === 'selfie_new') {
+        toast(m.preview ? '🤳 มีรูปเซลฟี่ทดสอบส่งเข้ามา' : '🤳 เขาส่งรูปเซลฟี่มาให้!', 'info', { label: 'ดูเลย', to: `${BASE}/selfie${m.preview ? '?test=1' : ''}` });
+        if (prefs.sound) sfx.chime();
+      }
       if (m.t === 'event' && !m.preview) {
         const key = notifyKey(m.event);
         if (key && key !== 'message_sent' && prefs.events?.[key]) {
@@ -266,6 +272,7 @@ function Shell({ me, setMe, onLogout }: { me: any; setMe: (m: any) => void; onLo
                 <Route path="exchange" element={<Exchange />} />
                 <Route path="messages" element={<Messages />} />
                 <Route path="gallery" element={<Gallery />} />
+                <Route path="selfie" element={<Selfie />} />
                 <Route path="confession" element={<Confession />} />
                 <Route path="fyi" element={<Fyi />} />
                 <Route path="music" element={<Music />} />
