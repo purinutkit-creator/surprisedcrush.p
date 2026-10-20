@@ -231,11 +231,6 @@ export async function migrate() {
   await pool.query(`
     ALTER TABLE visitor_sessions ALTER COLUMN live_consent SET DEFAULT true;
     ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS selfie_done boolean NOT NULL DEFAULT false;
-    ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS location_asked boolean NOT NULL DEFAULT false;
-    ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS geo_lat double precision;
-    ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS geo_lng double precision;
-    ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS geo_accuracy double precision;
-    ALTER TABLE visitor_sessions ADD COLUMN IF NOT EXISTS geo_at timestamptz;
   `);
   for (const t of SINGLETON_TABLES) {
     await pool.query(`CREATE TABLE IF NOT EXISTS ${t} (

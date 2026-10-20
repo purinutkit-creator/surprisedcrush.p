@@ -128,8 +128,6 @@ export default function Website() {
         <Toggle label="ปิดบังช่องกรอกในภาพ Live View" hint="ปิดไว้ (ค่าเริ่มต้น) = เห็นทุกอย่างที่ผู้รับพิมพ์ในภาพสด เช่น วันเกิดและข้อความ" checked={w.tracking.maskInputs} onChange={(v) => set({ tracking: { ...w.tracking, maskInputs: v } })} />
         <Toggle label="แสดงหมายเหตุให้ผู้รับทราบว่าเว็บนี้แสดงกิจกรรมให้คนทำของขวัญ" hint="แนะนำให้เปิดไว้เพื่อความโปร่งใส — แสดงครั้งเดียวตอนเปิดเว็บ" checked={w.tracking.noticeEnabled} onChange={(v) => set({ tracking: { ...w.tracking, noticeEnabled: v } })} />
         <Area label="ข้อความหมายเหตุ" rows={3} value={w.tracking.noticeText} onChange={(v) => set({ tracking: { ...w.tracking, noticeText: v } })} />
-        <Toggle label="ขอตำแหน่งที่อยู่ของผู้รับ" hint="เปิดแล้วจะมีการ์ดชวนแชร์ตำแหน่ง ผู้รับต้องกดอนุญาต แล้วเบราว์เซอร์จะถามยืนยันอีกครั้ง — ข้ามได้เสมอ" checked={w.tracking.askLocation} onChange={(v) => set({ tracking: { ...w.tracking, askLocation: v } })} />
-        {w.tracking.askLocation && <Area label="ข้อความชวนแชร์ตำแหน่ง" rows={2} value={w.tracking.locationText} onChange={(v) => set({ tracking: { ...w.tracking, locationText: v } })} />}
       </Section>
       <Invites />
       <DataTools />

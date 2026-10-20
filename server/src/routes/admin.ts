@@ -187,7 +187,6 @@ async function sessionSummaries(where = 'TRUE', params: unknown[] = []) {
       hintsUnlocked: nums.hintsUnlocked, hintsTotal: c.lists.hints.length, specialHints: game.special_hints, solved: game.solved, solvedVia: game.solved_via,
       exhausted: nums.exhausted, messageSent: r.message_sent, galleryOpened: r.gallery_opened, confessionOpened: r.confession_opened,
       liveConsent: r.live_consent, guessCount: r.guess_count, pendingRequests: r.pending,
-      geo: r.geo_lat != null ? { lat: r.geo_lat, lng: r.geo_lng, accuracy: r.geo_accuracy, at: r.geo_at } : null,
     };
   });
 }

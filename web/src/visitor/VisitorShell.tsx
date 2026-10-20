@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { ApiError, visitorApi } from '../lib/api';
 import { applyThemeToRoot } from '../lib/theme';
 import { Background } from './components/Background';
-import { ConsentBanner, LiveIndicator, LocationPrompt } from './components/ConsentBanner';
+import { ConsentBanner, LiveIndicator } from './components/ConsentBanner';
 import { GiftLoader } from './components/GiftLoader';
 import { MusicButton } from './components/MusicButton';
 import { PreviewBar } from './components/PreviewBar';
@@ -125,7 +125,6 @@ export default function VisitorShell() {
       <MusicButton />
       <TipsButton fyi={state.fyi} page={page} />
       <ConsentBanner />
-      <LocationPrompt />
       <LiveIndicator />
       <SurpriseLayer />
       <PreviewBar />

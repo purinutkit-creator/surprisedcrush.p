@@ -16,7 +16,6 @@ export interface VisitorRow {
   letter_opened: boolean; letter_read: boolean; celebrated: boolean; message_sent: boolean;
   gallery_opened: boolean; confession_opened: boolean; live_consent: boolean; tracking_ack: boolean;
   selfie_done: boolean;
-  location_asked: boolean; geo_lat: number | null; geo_lng: number | null; geo_accuracy: number | null; geo_at: Date | null;
 }
 export interface GameRow {
   session_id: string; started_at: Date | null; attempts_used: number; extra_chances: number; hint_bonus: number;
@@ -232,7 +231,7 @@ export async function buildState(ctx: VisitorCtx) {
     sessionId: s.id,
     site: { siteName: w.siteName, footerText: w.footerText, faviconUrl: mediaUrl(w.faviconId) },
     theme: publicTheme(c),
-    tracking: { ...w.tracking, ack: s.tracking_ack, live: s.live_consent, locationShared: s.geo_lat != null, locationAsked: s.location_asked },
+    tracking: { ...w.tracking, ack: s.tracking_ack, live: s.live_consent },
     music: publicMusic(c),
     fyi: publicFyi(c),
     pages,
@@ -258,7 +257,6 @@ export async function buildState(ctx: VisitorCtx) {
     state.selfie = {
       enabled: true, title: fill(sf.title, v), subtitle: fill(sf.subtitle, v),
       giftLabel: sf.giftLabel, togetherLabel: sf.togetherLabel,
-      frameStyle: sf.frameStyle, frameImageUrl: mediaUrl(sf.frameImageId), frameColor: sf.frameColor, frameCaption: fill(sf.frameCaption, v),
       representationImageUrl: mediaUrl(sf.representationImageId), representationCaption: sf.representationCaption,
       sendLabel: sf.sendLabel, skipLabel: sf.skipLabel, thanksText: sf.thanksText,
     };
@@ -399,10 +397,6 @@ export async function markProgress(ctx: VisitorCtx, event: string) {
       // Optional keepsake; the visitor may skip at any time.
       if (!s.selfie_done) await query(`UPDATE visitor_sessions SET selfie_done = true WHERE id = $1`, [id]);
       return;
-    case 'location_asked':
-      // Marks that the location prompt was shown and dismissed/skipped (so it isn't shown again).
-      if (!s.location_asked) await query(`UPDATE visitor_sessions SET location_asked = true WHERE id = $1`, [id]);
-      return;
     case 'celebrated':
       if (!ctx.game.solved) throw new HttpError(403, 'locked');
       if (!s.celebrated) await query(`UPDATE visitor_sessions SET celebrated = true WHERE id = $1`, [id]);
@@ -534,20 +528,6 @@ export async function sendMessage(ctx: VisitorCtx, raw: unknown) {
   await logVisitor(sv(ctx), 'message_sent', { chars: count, messageId: row!.id });
   hub.toAdmins({ t: 'message_new', id: row!.id, preview: ctx.preview });
   return { duplicate: false };
-}
-
-export async function recordLocation(ctx: VisitorCtx, body: any) {
-  if (!ctx.content.sections.website.tracking.askLocation) throw new HttpError(403, 'ปิดอยู่');
-  const lat = Number(body?.lat), lng = Number(body?.lng);
-  const acc = Number(body?.accuracy);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    throw new HttpError(400, 'ตำแหน่งไม่ถูกต้อง');
-  }
-  await query(
-    `UPDATE visitor_sessions SET geo_lat = $2, geo_lng = $3, geo_accuracy = $4, geo_at = now(), location_asked = true WHERE id = $1`,
-    [ctx.session.id, lat, lng, Number.isFinite(acc) ? Math.min(100000, Math.max(0, acc)) : null]);
-  await logVisitor(sv(ctx), 'location_shared', { accuracy: Number.isFinite(acc) ? Math.round(acc) : null });
-  hub.toAdmins({ t: 'location_new', sessionId: ctx.session.id, preview: ctx.preview });
 }
 
 export async function getConfession(ctx: VisitorCtx) {

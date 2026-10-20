@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { adminApi } from '../../lib/api';
-import { Btn, Color, Empty, MediaInput, Row, SaveBar, Section, Select, Text, Toggle } from '../components/form';
-import { FrameOverlay } from '../../visitor/components/Camera';
+import { Btn, Empty, MediaInput, Row, SaveBar, Section, Text, Toggle } from '../components/form';
 import { Lightbox } from '../../visitor/components/Lightbox';
 import { fmtDateTime } from '../events';
 import { useAdmin, useAsync, useLiveBus, useSection } from '../store';
@@ -40,30 +39,6 @@ export default function Selfie() {
           <MediaInput label="รูปตัวแทนของเรา" hint="เช่น รูปเรา รูปการ์ตูน หรือสติกเกอร์ ให้ผู้รับถ่ายคู่ด้วย" value={s.representationImageId} onChange={(id) => set({ representationImageId: id })} />
           <Text label="คำบรรยายใต้รูปตัวแทน" value={s.representationCaption} onChange={(v) => set({ representationCaption: v })} />
         </Row>
-      </Section>
-
-      <Section title="กรอบรูปถ่าย 🖼️" desc="เลือกกรอบสำเร็จรูป หรืออัปโหลดกรอบ PNG พื้นใสของตัวเอง (ครอบรูปสี่เหลี่ยมจัตุรัส)">
-        <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
-          <div className="space-y-4">
-            <Row>
-              <Select label="สไตล์กรอบ" value={s.frameStyle} onChange={(v) => set({ frameStyle: v })} options={[
-                ['polaroid', 'โพลารอยด์ (ขอบขาว + ข้อความ)'], ['hearts', 'หัวใจ 💗'], ['pastel', 'ขอบพาสเทล'], ['none', 'ไม่มีกรอบ'], ['custom', 'กรอบที่อัปโหลดเอง'],
-              ]} />
-              <Color label="สีกรอบ/ข้อความ" value={s.frameColor} onChange={(v) => set({ frameColor: v })} />
-              <Text label="ข้อความบนกรอบ" value={s.frameCaption} onChange={(v) => set({ frameCaption: v })} />
-            </Row>
-            {s.frameStyle === 'custom' && (
-              <MediaInput label="ไฟล์กรอบ PNG พื้นใส" hint="ควรเป็นสี่เหลี่ยมจัตุรัส ตรงกลางโปร่งใสเพื่อให้เห็นหน้า" value={s.frameImageId} onChange={(id) => set({ frameImageId: id })} />
-            )}
-          </div>
-          <div>
-            <p className="mb-1 text-sm text-zinc-500">ตัวอย่างกรอบ</p>
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gradient-to-br from-pink-100 to-violet-100">
-              <div className="absolute inset-0 grid place-items-center text-5xl opacity-40">🙂</div>
-              <FrameOverlay frame={{ style: s.frameStyle, imageUrl: s.frameImageId ? `/media/${s.frameImageId}` : null, color: s.frameColor, caption: s.frameCaption }} />
-            </div>
-          </div>
-        </div>
       </Section>
 
       <Section title="รูปที่ได้รับ" desc="เห็นเฉพาะในหน้าแอดมินนี้" actions={

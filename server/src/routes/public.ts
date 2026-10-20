@@ -6,7 +6,7 @@ import { hub } from '../realtime.js';
 import { deleteMedia, saveMedia } from '../storage.js';
 import { ah, HttpError, rateLimit } from '../util.js';
 import {
-  BlockedError, buildState, checkBirthday, getConfession, guess, logVisitor, markProgress, recordLocation, requireVisitor,
+  BlockedError, buildState, checkBirthday, getConfession, guess, logVisitor, markProgress, requireVisitor,
   resolveVisitor, sendMessage, startWithoutBirthday, submitMission,
 } from '../visitor.js';
 
@@ -92,13 +92,6 @@ publicRouter.post('/message', rateLimit('message', 6, 60_000), ah(async (req, re
   const ctx = await requireVisitor(req, res);
   const result = await sendMessage(ctx, req.body?.content);
   res.json({ ...result, state: await fresh(req, res) });
-}));
-
-publicRouter.post('/location', rateLimit('location', 12, 60_000), ah(async (req, res) => {
-  await ensureOpen(req);
-  const ctx = await requireVisitor(req, res);
-  await recordLocation(ctx, req.body);
-  res.json({ ok: true, state: await fresh(req, res) });
 }));
 
 publicRouter.get('/confession', ah(async (req, res) => {

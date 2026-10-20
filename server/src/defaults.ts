@@ -88,9 +88,6 @@ export const DEFAULT_SECTIONS: Record<SectionName, Record<string, any>> = {
       // things the giver already owns or receives (birthday they set, guesses, the message to them).
       maskInputs: false,
       consentText: 'ให้คนทำของขวัญดูหน้าเว็บที่เธอกำลังเปิดแบบสด ๆ ได้มั้ย?',
-      // Location is only recorded after the recipient taps allow AND the browser grants permission.
-      askLocation: false,
-      locationText: 'แชร์ตำแหน่งตอนนี้ให้คนทำของขวัญด้วยมั้ย? (เบราว์เซอร์จะถามยืนยันอีกครั้ง และข้ามได้นะ)',
     },
   },
   recipient: {
@@ -246,11 +243,6 @@ export const DEFAULT_SECTIONS: Record<SectionName, Record<string, any>> = {
     subtitle: 'ก่อนเปิดของขวัญ ถ้าอยากถ่ายรูปเก็บไว้เป็นที่ระลึกก็ถ่ายได้นะ ไม่ถ่ายก็ไม่เป็นไรเลยน้า 💗',
     giftLabel: 'เซลฟี่คู่กับของขวัญ 🎁',
     togetherLabel: 'เซลฟี่คู่กับตัวแทนของเรา 💞',
-    // In-app camera with a decorative frame. frameStyle: polaroid | hearts | pastel | none | custom.
-    frameStyle: 'polaroid',
-    frameImageId: null,
-    frameColor: '#FF82AB',
-    frameCaption: 'Happy Birthday 💗',
     representationImageId: null,
     representationCaption: 'นี่คือตัวแทนของเรานะ เอาไว้ถ่ายคู่กันน้า 🤭',
     sendLabel: 'ส่งให้คนทำของขวัญ 💌',
