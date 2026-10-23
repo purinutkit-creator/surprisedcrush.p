@@ -100,8 +100,8 @@ export default function VisitorShell() {
     if (!m.enabled) { music.setTrack(null); return; }
     const pick = m.pageTracks?.[page];
     const id = pick === 'none' ? null : pick || m.mainTrackId || m.tracks[0]?.id;
-    const t = m.tracks.find((x: any) => x.id === id);
-    music.setTrack(t?.url ?? null, t?.title ?? null);
+    const t = pick === 'none' ? null : m.tracks.find((x: any) => x.id === id);
+    music.setTrack(t ? { id: t.id, title: t.title, engine: t.engine, url: t.url, videoId: t.videoId, start: t.start, end: t.end } : null);
   }, [state?.music, page, music]);
 
   if (gate) return <Notice title={gate.title} message={gate.message} footer={gate.site?.footerText} />;

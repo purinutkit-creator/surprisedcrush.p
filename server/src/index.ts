@@ -24,14 +24,15 @@ app.use(helmet({
     useDefaults: true,
     directives: {
       'default-src': ["'self'"],
-      'script-src': ["'self'"],
+      // YouTube IFrame Player API scripts for background music from YouTube.
+      'script-src': ["'self'", 'https://www.youtube.com', 'https://s.ytimg.com'],
       'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
-      'img-src': ["'self'", 'data:', 'blob:'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https://i.ytimg.com', 'https://img.youtube.com'],
       'media-src': ["'self'", 'https:', 'blob:'],
-      'connect-src': ["'self'", 'ws:', 'wss:'],
-      // rrweb's replayer renders the visitor's DOM inside a sandboxed same-origin iframe.
-      'frame-src': ["'self'", 'blob:'],
+      'connect-src': ["'self'", 'ws:', 'wss:', 'https://www.youtube.com', 'https://www.googleapis.com'],
+      // rrweb's replayer renders the visitor's DOM inside a sandboxed same-origin iframe; YouTube for music.
+      'frame-src': ["'self'", 'blob:', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       'worker-src': ["'self'", 'blob:'],
       'frame-ancestors': ["'self'"],
       'upgrade-insecure-requests': config.isProduction ? [] : null,

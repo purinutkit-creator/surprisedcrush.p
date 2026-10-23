@@ -198,9 +198,19 @@ function publicFyi(c: Content) {
   };
 }
 
+function publicTrack(t: ListItem) {
+  const start = Math.max(0, Math.floor(Number(t.startSec) || 0));
+  const end = Math.max(0, Math.floor(Number(t.endSec) || 0));
+  if (t.source === 'youtube') {
+    return t.videoId ? { id: t.id, title: t.title, engine: 'youtube' as const, videoId: String(t.videoId), start, end } : null;
+  }
+  const url = trackUrl(t);
+  return url ? { id: t.id, title: t.title, engine: 'audio' as const, url, start, end } : null;
+}
+
 function publicMusic(c: Content) {
   const m = c.sections.music;
-  const tracks = c.lists.tracks.map((t) => ({ id: t.id, title: t.title, url: trackUrl(t) })).filter((t) => t.url);
+  const tracks = c.lists.tracks.map(publicTrack).filter(Boolean);
   return { enabled: m.enabled && tracks.length > 0, defaultVolume: m.defaultVolume, loop: m.loop, fadeMs: m.fadeMs, mainTrackId: m.mainTrackId, pageTracks: m.pageTracks, tracks };
 }
 

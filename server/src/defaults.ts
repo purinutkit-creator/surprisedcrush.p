@@ -344,7 +344,7 @@ export const LIST_ITEM_DEFAULTS: Record<ListName, () => Record<string, any>> = {
   hints: () => ({ text: '' }),
   missions: () => ({ ...DEFAULT_LISTS.missions[0], title: '', description: '', enabled: true }),
   photos: () => ({ mediaId: null, width: 0, height: 0, caption: '', frame: 'pink', sticker: '💗', animation: 'float', visible: true, isCover: false }),
-  tracks: () => ({ title: '', source: 'upload', mediaId: null, url: '' }),
+  tracks: () => ({ title: '', source: 'upload', mediaId: null, url: '', videoId: '', startSec: 0, endSec: 0 }),
   fyiItems: fyiItemDefaults,
 };
 

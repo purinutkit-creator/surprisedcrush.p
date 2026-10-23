@@ -6,6 +6,7 @@ import {
 } from '../content.js';
 import { one, query } from '../db.js';
 import { DEFAULT_ADMIN_PREFS, DEFAULT_SECURITY, LISTS, SECTIONS, withDefaults, type ListName, type SectionName } from '../defaults.js';
+import { fetchJson, parseYouTubeId } from '../http.js';
 import { hub, presenceSnapshot } from '../realtime.js';
 import { deleteMedia, saveMedia } from '../storage.js';
 import { ah, clampInt, HttpError, randomToken, rateLimit } from '../util.js';
@@ -400,6 +401,59 @@ adminRouter.get('/messages.csv', ah(async (req, res) => {
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="messages-${new Date().toISOString().slice(0, 10)}.csv"`);
   res.send('﻿' + lines.join('\r\n'));
+}));
+
+/* -------------------------------------------------------------- youtube music */
+
+// Optional YouTube Data API key enables in-admin song search. Stored admin-side only, never sent to visitors.
+adminRouter.get('/youtube-key', ah(async (_req, res) => {
+  const row = await one<{ value: string }>(`SELECT value FROM app_kv WHERE key = 'youtube_api_key'`);
+  res.json({ set: !!(row?.value && String(row.value).length > 10) });
+}));
+
+adminRouter.put('/youtube-key', ah(async (req, res) => {
+  const key = String(req.body?.key ?? '').trim();
+  if (key) {
+    await query(`INSERT INTO app_kv (key, value) VALUES ('youtube_api_key', to_jsonb($1::text))
+                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`, [key]);
+  } else {
+    await query(`DELETE FROM app_kv WHERE key = 'youtube_api_key'`);
+  }
+  await logAdmin(req, 'youtube_key_set', { set: !!key });
+  res.json({ set: !!key });
+}));
+
+// Resolve a pasted link/id to a video id + title (no API key needed; uses YouTube oEmbed).
+adminRouter.get('/youtube-info', ah(async (req, res) => {
+  const id = parseYouTubeId(String(req.query.q ?? ''));
+  if (!id) throw new HttpError(400, 'ลิงก์ YouTube ไม่ถูกต้อง');
+  try {
+    const data = await fetchJson<{ title: string; author_name: string }>(
+      `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${id}`)}`);
+    res.json({ videoId: id, title: data.title, author: data.author_name });
+  } catch {
+    // Still usable — the admin can set the title by hand.
+    res.json({ videoId: id, title: '', author: '' });
+  }
+}));
+
+adminRouter.get('/youtube-search', rateLimit('ytsearch', 30, 60_000), ah(async (req, res) => {
+  const q = String(req.query.q ?? '').trim().slice(0, 100);
+  if (!q) throw new HttpError(400, 'ใส่ชื่อเพลงก่อน');
+  const row = await one<{ value: string }>(`SELECT value FROM app_kv WHERE key = 'youtube_api_key'`);
+  const key = row?.value;
+  if (!key) throw new HttpError(409, 'ยังไม่ได้ตั้งค่า YouTube API Key (ใส่คีย์เพื่อค้นหาในแอดมิน หรือใช้วิธีวางลิงก์แทนได้)', { noKey: true });
+  try {
+    const data = await fetchJson<any>(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=12&q=${encodeURIComponent(q)}&key=${encodeURIComponent(key)}`);
+    const items = (data.items ?? []).map((it: any) => ({
+      videoId: it.id?.videoId, title: it.snippet?.title, author: it.snippet?.channelTitle,
+      thumb: it.snippet?.thumbnails?.default?.url ?? null,
+    })).filter((x: any) => x.videoId);
+    res.json({ items });
+  } catch (e: any) {
+    throw new HttpError(502, 'ค้นหาไม่สำเร็จ ตรวจสอบ API Key หรือโควตา (หรือใช้วิธีวางลิงก์แทน)');
+  }
 }));
 
 /* -------------------------------------------------------------- selfies */
