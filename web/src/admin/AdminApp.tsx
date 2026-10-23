@@ -15,6 +15,7 @@ const Exchange = lazy(() => import('./sections/Exchange'));
 const Messages = lazy(() => import('./sections/Messages'));
 const Gallery = lazy(() => import('./sections/Gallery'));
 const Selfie = lazy(() => import('./sections/Selfie'));
+const Qr = lazy(() => import('./sections/Qr'));
 const Confession = lazy(() => import('./sections/Confession'));
 const Music = lazy(() => import('./sections/Music'));
 const Appearance = lazy(() => import('./sections/Appearance'));
@@ -40,6 +41,7 @@ const NAV: { to: string; label: string; icon: string }[] = [
   { to: 'fyi', label: 'FYI & Love Timer', icon: '💡' },
   { to: 'music', label: 'Music Manager', icon: '🎵' },
   { to: 'appearance', label: 'Appearance', icon: '🎨' },
+  { to: 'qr', label: 'QR Code', icon: '🔗' },
   { to: 'website', label: 'Website Settings', icon: '⚙️' },
   { to: 'security', label: 'Security', icon: '🔐' },
 ];
@@ -277,6 +279,7 @@ function Shell({ me, setMe, onLogout }: { me: any; setMe: (m: any) => void; onLo
                 <Route path="fyi" element={<Fyi />} />
                 <Route path="music" element={<Music />} />
                 <Route path="appearance" element={<Appearance />} />
+                <Route path="qr" element={<Qr />} />
                 <Route path="website" element={<Website />} />
                 <Route path="security" element={<Security />} />
                 <Route path="*" element={<Navigate to={BASE} replace />} />

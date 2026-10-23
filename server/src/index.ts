@@ -30,7 +30,8 @@ app.use(helmet({
       'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
       'img-src': ["'self'", 'data:', 'blob:', 'https://i.ytimg.com', 'https://img.youtube.com'],
       'media-src': ["'self'", 'https:', 'blob:'],
-      'connect-src': ["'self'", 'ws:', 'wss:', 'https://www.youtube.com', 'https://www.googleapis.com'],
+      // data:/blob: let qr-code-styling load the QR centre image (emoji rendered to a data URL).
+      'connect-src': ["'self'", 'ws:', 'wss:', 'data:', 'blob:', 'https://www.youtube.com', 'https://www.googleapis.com'],
       // rrweb's replayer renders the visitor's DOM inside a sandboxed same-origin iframe; YouTube for music.
       'frame-src': ["'self'", 'blob:', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       'worker-src': ["'self'", 'blob:'],
