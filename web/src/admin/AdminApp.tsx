@@ -3,6 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { adminApi, ApiError } from '../lib/api';
 import { sfx } from '../lib/sfx';
+import { APP_VERSION } from '../version';
 import { Btn } from './components/form';
 import { eventLabel, notifyKey } from './events';
 import { AdminContext, AdminLive, type Toast } from './store';
@@ -219,6 +220,7 @@ function Shell({ me, setMe, onLogout }: { me: any; setMe: (m: any) => void; onLo
               <p className="text-sm font-semibold leading-tight">1st Gift</p>
               <p className="text-xs text-zinc-500">Surprised My Crush</p>
             </div>
+            <span className="ml-auto rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500" title="เวอร์ชันของเว็บ">{APP_VERSION}</span>
           </div>
           <nav className="h-[calc(100dvh-8rem)] space-y-0.5 overflow-y-auto p-3">
             {NAV.map((n) => (

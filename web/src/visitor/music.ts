@@ -46,8 +46,11 @@ function loadYouTubeApi(): Promise<any> {
 
 /**
  * Background music that plays either uploaded/linked audio files (two cross-fading <audio>)
- * or YouTube videos (hidden IFrame player). Each track can play just a chosen segment (start→end)
- * and loop it. Browsers block autoplay, so nothing starts until enable() runs from a tap.
+ * or YouTube videos (hidden IFrame player). Each track can play just a chosen segment and loop it.
+ *
+ * YouTube note: autoplay-with-sound is blocked by browsers, so a YouTube track starts MUTED as soon
+ * as it's selected (muted autoplay is always allowed) and is un-muted the moment the visitor taps the
+ * sound prompt / music button — that keeps the audio tied to a real user gesture, so it actually plays.
  */
 export class MusicController {
   private els: HTMLAudioElement[];
@@ -89,7 +92,10 @@ export class MusicController {
   subscribe(fn: () => void) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
   private emit() { for (const l of this.listeners) l(); }
 
-  get playing() { return this.engine === 'youtube' ? this.ytPlaying : !!this.engine && !this.els[this.activeAudio].paused; }
+  get playing() {
+    if (this.engine === 'youtube') return this.on && this.ytPlaying;
+    return !!this.engine && this.engine === 'audio' && !this.els[this.activeAudio].paused;
+  }
   get currentTitle() { return this.track?.title ?? null; }
   get hasTrack() { return !!this.track; }
 
@@ -100,12 +106,12 @@ export class MusicController {
     if (this.engine === 'audio') {
       const cur = this.els[this.activeAudio];
       if (!cur.paused && !this.fades.has(cur)) cur.volume = this.volume;
-    } else if (this.engine === 'youtube' && this.yt && !this.ytFade) {
+    } else if (this.engine === 'youtube' && this.yt && this.on && !this.ytFade) {
       try { this.yt.setVolume(Math.round(this.volume * 100)); } catch { /* not ready */ }
     }
   }
 
-  /** Switch to a track (null = silence). Same track (engine + source + segment) keeps playing. */
+  /** Switch to a track (null = silence). Same track keeps playing. */
   setTrack(track: Track | null) {
     const k = keyOf(track);
     if (k === this.key) return;
@@ -114,7 +120,8 @@ export class MusicController {
     this.track = track;
     this.engine = track?.engine ?? null;
     if (!track) { this.emit(); return; }
-    if (this.on) this.startCurrent();
+    if (track.engine === 'youtube') this.prepareYouTube(track); // warms up muted, audible once enabled
+    else if (this.on) this.startAudio(track);
     this.emit();
   }
 
@@ -125,28 +132,22 @@ export class MusicController {
     } else if (this.engine === 'youtube') {
       this.clearSeg();
       this.ytPlaying = false;
-      if (this.yt) this.fadeYt(0, () => { try { this.yt.pauseVideo(); } catch { /* ignore */ } });
+      try { this.yt?.pauseVideo?.(); } catch { /* ignore */ }
     }
-  }
-
-  private startCurrent() {
-    if (!this.track) return;
-    if (this.track.engine === 'audio') this.startAudio(this.track);
-    else this.startYouTube(this.track);
   }
 
   /* ----------------------------------- audio engine */
   private audioSegmentCheck(el: HTMLAudioElement) {
     if (el !== this.els[this.activeAudio] || !this.track || this.track.engine !== 'audio') return;
     const { start, end } = this.track;
-    if (end > start && el.currentTime >= end) { el.currentTime = start; if (!this.loop) { el.pause(); } }
+    if (end > start && el.currentTime >= end) { el.currentTime = start; if (!this.loop) el.pause(); }
   }
 
   private startAudio(track: Track) {
     this.activeAudio = 1 - this.activeAudio;
     const el = this.els[this.activeAudio];
     el.src = track.url!;
-    el.loop = this.loop && !(track.end > track.start); // segment loop handled manually
+    el.loop = this.loop && !(track.end > track.start);
     el.volume = 0;
     const begin = () => { try { el.currentTime = track.start || 0; } catch { /* seek later */ } };
     el.addEventListener('loadedmetadata', begin, { once: true });
@@ -172,46 +173,59 @@ export class MusicController {
   private ensureYtHost() {
     if (this.ytHost) return;
     const host = document.createElement('div');
-    // Keep it in the layout (off-screen) — fully hidden iframes can get throttled/muted.
-    host.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;bottom:0;opacity:0.01;pointer-events:none;';
+    host.style.cssText = 'position:fixed;width:2px;height:2px;left:-9999px;bottom:0;opacity:0.01;pointer-events:none;';
     const inner = document.createElement('div');
     host.appendChild(inner);
     document.body.appendChild(host);
     this.ytHost = inner as HTMLDivElement;
   }
 
-  private async startYouTube(track: Track) {
+  private prepareYouTube(track: Track) {
     this.ensureYtHost();
-    const YT = await loadYouTubeApi();
-    if (this.track !== track) return; // changed while loading
-    const begin = () => {
-      try {
-        this.yt.seekTo(track.start || 0, true);
-        this.yt.setVolume(0);
-        this.yt.playVideo();
-        this.fadeYt(this.volume);
-        this.startSeg(track);
-      } catch { /* not ready */ }
-    };
-    if (!this.yt) {
-      this.yt = new YT.Player(this.ytHost, {
-        host: 'https://www.youtube-nocookie.com',
-        videoId: track.videoId,
-        playerVars: { autoplay: 0, controls: 0, disablekb: 1, playsinline: 1, rel: 0, modestbranding: 1 },
-        events: {
-          onReady: () => { this.ytReady = true; if (this.track === track && this.on) begin(); },
-          onStateChange: (e: any) => {
-            // 1 = playing, 2 = paused, 0 = ended
-            this.ytPlaying = e.data === 1;
-            if (e.data === 0 && this.loop && this.track?.engine === 'youtube') { try { this.yt.seekTo(this.track.start || 0, true); this.yt.playVideo(); } catch { /* ignore */ } }
-            this.emit();
+    loadYouTubeApi().then((YT) => {
+      if (this.track !== track) return;
+      if (!this.yt) {
+        this.yt = new YT.Player(this.ytHost, {
+          host: 'https://www.youtube-nocookie.com',
+          videoId: track.videoId,
+          playerVars: { autoplay: 1, mute: 1, controls: 0, disablekb: 1, playsinline: 1, rel: 0, modestbranding: 1, fs: 0 },
+          events: {
+            onReady: () => { this.ytReady = true; this.onYtReady(track); },
+            onStateChange: (e: any) => {
+              this.ytPlaying = e.data === 1;
+              if (e.data === 0 && this.loop && this.track?.engine === 'youtube') {
+                try { this.yt.seekTo(this.track.start || 0, true); this.yt.playVideo(); } catch { /* ignore */ }
+              }
+              this.emit();
+            },
           },
-        },
-      });
-    } else if (this.ytReady) {
-      this.yt.loadVideoById({ videoId: track.videoId, startSeconds: track.start || 0 });
-      begin();
-    }
+        });
+      } else if (this.ytReady) {
+        this.yt.loadVideoById({ videoId: track.videoId, startSeconds: track.start || 0 });
+        this.onYtReady(track);
+      }
+    });
+  }
+
+  private onYtReady(track: Track) {
+    try {
+      this.yt.mute();
+      this.yt.seekTo(track.start || 0, true);
+      this.yt.playVideo();
+      this.startSeg(track);
+      if (this.on) this.makeAudible();
+    } catch { /* ignore */ }
+  }
+
+  /** Un-mute within the user gesture so the browser allows sound. */
+  private makeAudible() {
+    if (!this.yt) return;
+    try {
+      this.yt.unMute();
+      this.yt.setVolume(0);
+      this.yt.playVideo();
+      this.fadeYt(this.volume);
+    } catch { /* ignore */ }
   }
 
   private startSeg(track: Track) {
@@ -227,7 +241,7 @@ export class MusicController {
     if (this.ytFade) clearInterval(this.ytFade);
     if (!this.yt) { done?.(); return; }
     let from = 0;
-    try { from = (this.yt.getVolume?.() ?? this.volume * 100) / 100; } catch { from = this.volume; }
+    try { from = (this.yt.getVolume?.() ?? 0) / 100; } catch { from = 0; }
     if (!this.fadeMs) { try { this.yt.setVolume(Math.round(to * 100)); } catch { /* ignore */ } done?.(); return; }
     const steps = Math.max(1, Math.round(this.fadeMs / 40));
     let i = 0;
@@ -243,13 +257,17 @@ export class MusicController {
   enable() {
     this.on = true;
     savePref('on');
-    if (this.track && !this.playing) this.startCurrent();
+    if (this.track) {
+      if (this.track.engine === 'youtube') { if (this.ytReady) this.makeAudible(); /* else onReady handles it */ }
+      else if (!this.playing) this.startAudio(this.track);
+    }
     this.emit();
   }
   disable() {
     this.on = false;
     savePref('off');
-    this.stopCurrent();
+    if (this.engine === 'youtube') this.fadeYt(0, () => { try { this.yt?.mute(); } catch { /* ignore */ } });
+    else { const el = this.els[this.activeAudio]; if (!el.paused) this.fadeAudio(el, 0, () => el.pause()); }
     this.emit();
   }
   toggle() { if (this.on && this.playing) this.disable(); else this.enable(); }
